@@ -41,7 +41,7 @@ stg=1
 init=trueVar
 httpTk=0
 tick=0
-camPos={0,1,-3}
+camPos={0,0.3,-1}
 camRot={0,0,0}
 tickRate=62.5
 angleConvert=pi/180
@@ -260,6 +260,7 @@ function summonObject(index,conditions)
 		conditions[8]or 1, -- 11 ability to be rotated, should really be a vec3
 		conditions[9]or{0,0,0}, -- 12 gravity
 		M[1][index][7], -- 13 max point dist from object's origin
+		index, -- 14
 	}
 	objects[#objects+1]=newObject
 end
@@ -414,13 +415,14 @@ function onTick()
 			
 			--summonObject("cylinder",{[1]={-6,0,0}})
 			--summonObject("utah_teapot",{[1]={6,0,0}})
+			summonObject("icoball",{[1]={0,0.4,-1},[7]=0.2,[8]=10,[9]={0,-9.81,0}})
 			
-			summonObject("widest_cube",{[1]={0,-1,0},[7]=0,[8]=0})
+			summonObject("wide_cube",{[1]={0,-1,0},[7]=0,[8]=0})
 			--summonObject(4,{[1]={-20,-5,0},[7]=0,[8]=0})
 			
 			for i=1,4 do
 				for j=1,i do
-					summonObject("bowling_pin",{[1]={(j-i/2-0.5)*0.3,0.15,(i-1)*sqrt(0.3^2-0.15^2)},[7]=100,[8]=5000,[9]={0,-1,0}})
+					summonObject("bowling_pin",{[1]={(j-i/2-0.5)*0.3,0.15,(i-1)*sqrt(0.3^2-0.15^2)},[7]=0.75,[8]=50,[9]={0,-9.81,0}})
 				end
 			end
 		end
@@ -440,6 +442,9 @@ function onTick()
 		--	camRot[3]=camRot[3]+rotateSpeed
 		--end
 		pushForce=0
+		if gB(1) then
+			applyForce(objects[1],objects[1][1],{0,0,1})
+		end
 		if gB(31) then
 			maxPushForce=0.05
 		else
@@ -538,15 +543,14 @@ function onTick()
 				end
 			end
 			
-			if object[11]>0 or not object[8][1][8]then
+			if object[11]>0 or not object[8][1][8] then
 				for i=1,#object[8] do
 					curTri = object[8][i]
 					curTri[8]=crossPoints(object[7][curTri[1]][2], object[7][curTri[2]][2], object[7][curTri[3]][2])
 				end
 			end
 			
-			for i=1,#object[8] do
-				curTri = object[8][i]
+			for i,curTri in ipairsVar(object[8]) do
 				p1 = object[7][curTri[1]]
 				p2 = object[7][curTri[2]]
 				p3 = object[7][curTri[3]]
@@ -589,31 +593,33 @@ function onTick()
 			end
 		end
 		
-		pushRayHit = falseVar
-		bestT=2^16
-		for i,object in ipairsVar(objects) do
-			for j=1,#object[8] do
-				curTri = object[8][j]
-				curHit = intersectTriangle({0,0,0},cameraRotationVector,object[7][curTri[1]][3],object[7][curTri[2]][3],object[7][curTri[3]][3])
-				if curHit and t<bestT then
-					pushRayHit = trueVar
-					bestT=t
-					bestObject=object
+		if falseVar then
+			pushRayHit = falseVar
+			bestT=2^16
+			for i,object in ipairsVar(objects) do
+				for j=1,#object[8] do
+					curTri = object[8][j]
+					curHit = intersectTriangle({0,0,0},cameraRotationVector,object[7][curTri[1]][3],object[7][curTri[2]][3],object[7][curTri[3]][3])
+					if curHit and t<bestT then
+						pushRayHit = trueVar
+						bestT=t
+						bestObject=object
+					end
 				end
 			end
-		end
-		
-		if pushRayHit then
-			overalRayHit = trueVar
-			collPoint=add3(mul3(cameraRotationVector,bestT),camPos)
-			applyForce(bestObject,collPoint,mul3(cameraRotationVector,pushForce))
-			if gB(2) then
-				bestObject[12]={0,-9.81,0}
-			end
 			
-			collPointCamRelative=multVectorByMatrix(sub3(collPoint,camPos),cameraRotationMatrix)
-			collPointScreenPos={collPointCamRelative[1]*screenScale/collPointCamRelative[3],
-			collPointCamRelative[2]*screenScale/collPointCamRelative[3]}
+			if pushRayHit then
+				overalRayHit = trueVar
+				collPoint=add3(mul3(cameraRotationVector,bestT),camPos)
+				applyForce(bestObject,collPoint,mul3(cameraRotationVector,pushForce))
+				if gB(2) then
+					bestObject[12]={0,-9.81,0}
+				end
+				
+				collPointCamRelative=multVectorByMatrix(sub3(collPoint,camPos),cameraRotationMatrix)
+				collPointScreenPos={collPointCamRelative[1]*screenScale/collPointCamRelative[3],
+				collPointCamRelative[2]*screenScale/collPointCamRelative[3]}
+			end
 		end
 		
 		--collideAtAll = falseVar
@@ -687,7 +693,7 @@ function onTick()
 							if totalSpeedTangential>0.001 then
 								unitFriction = norm3(totalVelocityTangential)
 								movementFromFriction = getMovementPerUnitForce(object1,trueContactPoint,unitFriction) + getMovementPerUnitForce(object2,trueContactPoint,unitFriction)
-								frictionForce = mn(totalSpeedTangential/movementFromFriction, pushForce)
+								frictionForce = mn(totalSpeedTangential/movementFromFriction, pushForce*0.3)
 								
 								applyForce(object1,trueContactPoint,mul3(unitFriction,-frictionForce))
 								applyForce(object2,trueContactPoint,mul3(unitFriction,frictionForce))

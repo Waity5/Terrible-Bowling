@@ -14,8 +14,8 @@ if __name__ == '__main__':
     packets = []
     curmax = 8192
 
-    objects=["monkey","blender_cube","wide_cube","wider_cube","cylinder","utah_teapot","widest_cube","bowling_pin"]
-    object_colours=[(0,255,0),(255,0,0),(255,255,255),(255,255,255),(0,0,255),(0,255,0),(255,255,255),(255,255,255)]
+    objects=["monkey","blender_cube","wide_cube","wider_cube","cylinder","utah_teapot","widest_cube","bowling_pin","icoball"]
+    object_colours=[(0,255,0),(255,0,0),(255,255,255),(255,255,255),(0,0,255),(0,255,0),(255,255,255),(255,255,255),(171,0,255)]
     min_brightness = 0.2
 
     total_points = 0
@@ -51,7 +51,7 @@ if __name__ == '__main__':
 
         scale = 1
 
-        #print(len(your_mesh.v0), "triangles")
+        triangle_count = len(your_mesh.v0)
         points = list(your_mesh.v0)+list(your_mesh.v1)+list(your_mesh.v2)#your_mesh.points
         points = [tuple(i) for i in points]
         points = list(set(points))
@@ -59,6 +59,9 @@ if __name__ == '__main__':
         phys_points = [tuple(i) for i in phys_points]
         phys_points = list(set(phys_points))
         #print(len(phys_points),"phys points")
+
+        
+        print(cur_object,"is",triangle_count,"triangles and",len(phys_points),"phys points")
         
         #print(points)
         #vectors = your_mesh.vectors*scale

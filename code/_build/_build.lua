@@ -34,22 +34,22 @@ end
 
 local _builder = LifeBoatAPI.Tools.Builder:new(rootDirs, outputDir, luaDocsMCPath, luaDocsAddonPath)
 
-if onLBBuildStarted then onLBBuildStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Users\Waity5\Documents\GitHub\3D-SW-thing\code]])) end
+if onLBBuildStarted then onLBBuildStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Users\Waity5\Documents\GitHub\Terrible-Bowling\code]])) end
 
-if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Users\Waity5\Documents\GitHub\3D-SW-thing\code]]), [[sound.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Users\Waity5\Documents\GitHub\3D-SW-thing\code\sound.lua]])) end
+if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Users\Waity5\Documents\GitHub\Terrible-Bowling\code]]), [[sound.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Users\Waity5\Documents\GitHub\Terrible-Bowling\code\sound.lua]])) end
 
-local combinedText, outText, outFile = _builder:buildMicrocontroller([[sound.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Users\Waity5\Documents\GitHub\3D-SW-thing\code\sound.lua]]), params)
-if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\Users\Waity5\Documents\GitHub\3D-SW-thing\code]]), [[sound.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Users\Waity5\Documents\GitHub\3D-SW-thing\code\sound.lua]]), outFile, combinedText, outText) end
+local combinedText, outText, outFile = _builder:buildMicrocontroller([[sound.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Users\Waity5\Documents\GitHub\Terrible-Bowling\code\sound.lua]]), params)
+if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\Users\Waity5\Documents\GitHub\Terrible-Bowling\code]]), [[sound.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Users\Waity5\Documents\GitHub\Terrible-Bowling\code\sound.lua]]), outFile, combinedText, outText) end
 
-if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Users\Waity5\Documents\GitHub\3D-SW-thing\code]]), [[render.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Users\Waity5\Documents\GitHub\3D-SW-thing\code\render.lua]])) end
+if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Users\Waity5\Documents\GitHub\Terrible-Bowling\code]]), [[render.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Users\Waity5\Documents\GitHub\Terrible-Bowling\code\render.lua]])) end
 
-local combinedText, outText, outFile = _builder:buildMicrocontroller([[render.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Users\Waity5\Documents\GitHub\3D-SW-thing\code\render.lua]]), params)
-if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\Users\Waity5\Documents\GitHub\3D-SW-thing\code]]), [[render.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Users\Waity5\Documents\GitHub\3D-SW-thing\code\render.lua]]), outFile, combinedText, outText) end
+local combinedText, outText, outFile = _builder:buildMicrocontroller([[render.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Users\Waity5\Documents\GitHub\Terrible-Bowling\code\render.lua]]), params)
+if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\Users\Waity5\Documents\GitHub\Terrible-Bowling\code]]), [[render.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Users\Waity5\Documents\GitHub\Terrible-Bowling\code\render.lua]]), outFile, combinedText, outText) end
 
-if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Users\Waity5\Documents\GitHub\3D-SW-thing\code]]), [[engine.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Users\Waity5\Documents\GitHub\3D-SW-thing\code\engine.lua]])) end
+if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Users\Waity5\Documents\GitHub\Terrible-Bowling\code]]), [[engine.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Users\Waity5\Documents\GitHub\Terrible-Bowling\code\engine.lua]])) end
 
-local combinedText, outText, outFile = _builder:buildMicrocontroller([[engine.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Users\Waity5\Documents\GitHub\3D-SW-thing\code\engine.lua]]), params)
-if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\Users\Waity5\Documents\GitHub\3D-SW-thing\code]]), [[engine.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Users\Waity5\Documents\GitHub\3D-SW-thing\code\engine.lua]]), outFile, combinedText, outText) end
+local combinedText, outText, outFile = _builder:buildMicrocontroller([[engine.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Users\Waity5\Documents\GitHub\Terrible-Bowling\code\engine.lua]]), params)
+if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\Users\Waity5\Documents\GitHub\Terrible-Bowling\code]]), [[engine.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Users\Waity5\Documents\GitHub\Terrible-Bowling\code\engine.lua]]), outFile, combinedText, outText) end
 
-if onLBBuildComplete then onLBBuildComplete(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Users\Waity5\Documents\GitHub\3D-SW-thing\code]])) end
+if onLBBuildComplete then onLBBuildComplete(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Users\Waity5\Documents\GitHub\Terrible-Bowling\code]])) end
 --- @diagnostic enable: undefined-global
