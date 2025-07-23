@@ -14,8 +14,8 @@ if __name__ == '__main__':
     packets = []
     curmax = 8192
 
-    objects=["monkey","blender_cube","wide_cube","wider_cube","cylinder","utah_teapot","widest_cube","bowling_pin","icoball"]
-    object_colours=[(0,255,0),(255,0,0),(255,255,255),(255,255,255),(0,0,255),(0,255,0),(255,255,255),(255,255,255),(171,0,255)]
+    objects=["monkey","blender_cube","wide_cube","wider_cube","cylinder","utah_teapot","widest_cube","bowling_pin","icoball","bowling_lane1","bowling_lane2","bowling_lane3"]
+    object_colours=[(0,255,0),(255,0,0),(255,255,255),(255,255,255),(0,0,255),(0,255,0),(255,255,255),(255,255,255),(171,0,255),(255,180,100),(255,0,0),(255,180,100)]
     min_brightness = 0.2
 
     total_points = 0
@@ -159,7 +159,7 @@ if __name__ == '__main__':
 
         
 
-    obj_name = "3D Thing"
+    obj_name = "Terrible Bowling"
     base_name = "base_vehicle"
 
     path_bits = [os.getenv('APPDATA')+"\\Stormworks\\data\\vehicles\\",".xml"]
@@ -209,7 +209,7 @@ if __name__ == '__main__':
         end = text.find(find_end,start)
         if i==1:
             None
-            print(code.split("\n")[121-1])
+            print(code.split("\n")[211-1])
             
 
         assert start>0 and end>0, "Code insertion search terms not in base vehicle file"

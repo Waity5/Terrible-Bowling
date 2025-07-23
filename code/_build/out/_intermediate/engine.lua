@@ -42,13 +42,21 @@ stg=1
 init=trueVar
 httpTk=0
 tick=0
-camPos={0,0.3,-1}
+camPos={0,0.3,-2}
 camRot={0,0,0}
+camDistStart=3
+camDistEnd=1
+camHeightStart=0.3
+camHeightEnd=0.6
 tickRate=62.5
 angleConvert=pi/180
-moveSpeed=3/tickRate
-rotateSpeed=90*angleConvert/tickRate
-fov=90*angleConvert
+moveSpeed=0.5/tickRate
+rotateSpeed=10*angleConvert/tickRate
+fovStart=20*angleConvert
+fovEnd=90*angleConvert
+fov=fovStart
+ballStart=-19.5
+ballEnd=-3
 screenScale=1
 tick=0
 deltaTime=1/62.5
@@ -404,6 +412,8 @@ function onTick()
 	if loaded then
 		tick = tick+1
 		if init then
+			ballHit=falseVar
+			ableToShoot=trueVar
 			objects={}
 			--for i=-1,1 do
 			--	for j=-1,1 do
@@ -416,9 +426,13 @@ function onTick()
 			
 			--summonObject("cylinder",{[1]={-6,0,0}})
 			--summonObject("utah_teapot",{[1]={6,0,0}})
-			summonObject("icoball",{[1]={0,0.4,-1},[7]=0.2,[8]=10,[9]={0,-9.81,0}})
+			summonObject("icoball",{[1]={0,0.4,ballStart},[7]=0.2,[8]=10,[9]={0,-9.81,0}})
 			
-			summonObject("wide_cube",{[1]={0,-1,0},[7]=0,[8]=0})
+			--summonObject("wide_cube",{[1]={0,-1,0},[7]=0,[8]=0})
+			summonObject("bowling_lane1",{[1]={0,-0.2,-8.15},[7]=0,[8]=0})
+			summonObject("bowling_lane2",{[1]={0,-0.2,-18.4},[7]=0,[8]=0})
+			summonObject("bowling_lane3",{[1]={0,-0.2,-19.5},[7]=0,[8]=0})
+			
 			--summonObject(4,{[1]={-20,-5,0},[7]=0,[8]=0})
 			
 			for i=1,4 do
@@ -427,44 +441,46 @@ function onTick()
 				end
 			end
 		end
-		if gB(31) then
-			camPos[2]=camPos[2]+gN(2)*moveSpeed
-		else
-			camPos[1]=camPos[1]+(gN(1)*cos(camRot[1]) - gN(2)*sin(camRot[1]))*moveSpeed
-			camPos[3]=camPos[3]+(gN(1)*sin(camRot[1]) + gN(2)*cos(camRot[1]))*moveSpeed
-		end
+		--if gB(31) then
+		--	camPos[2]=camPos[2]+gN(2)*moveSpeed
+		--else
+		--	camPos[1]=camPos[1]+(gN(1)*cos(camRot[1]) - gN(2)*sin(camRot[1]))*moveSpeed
+		--	camPos[3]=camPos[3]+(gN(1)*sin(camRot[1]) + gN(2)*cos(camRot[1]))*moveSpeed
+		--end
 		--camRot[3]=camRot[3]+gN(1)*rotateSpeed
-		camRot[1]=camRot[1]-gN(3)*rotateSpeed
-		camRot[2]=camRot[2]+gN(4)*rotateSpeed
+		--camRot[1]=camRot[1]-gN(3)*rotateSpeed
+		--camRot[2]=camRot[2]+gN(4)*rotateSpeed
+		
+		lerpDist = mn((objects[1][1][3]-ballStart)/(ballEnd-ballStart),1)
+		camDist = camDistStart + (camDistEnd-camDistStart)*lerpDist
+		fov = fovStart + (fovEnd-fovStart)*lerpDist
+		camHeight = camHeightStart + (camHeightEnd-camHeightStart)*lerpDist
+		
+		if not ballHit then
+			camRot[1] = camRot[1]-gN(3)*rotateSpeed
+			camRot[2] = -0.01
+			camPos = {sin(camRot[1])*camDist,camHeight,-cos(camRot[1])*camDist+objects[1][1][3]}
+		end
+		
 		--if gB(1) then
 		--	camRot[3]=camRot[3]-rotateSpeed
 		--end
 		--if gB(3) then
 		--	camRot[3]=camRot[3]+rotateSpeed
 		--end
-		pushForce=0
-		if gB(1) then
-			applyForce(objects[1],objects[1][1],{0,0,1})
+		--pushForce=0
+		--if gB(1) then
+		--	applyForce(objects[1],objects[1][1],{0,0,0.5})
+		--end
+		if ableToShoot and gB(31) then
+			ableToShoot = falseVar
+			tickShoot = 0
+			applyForce(objects[1],add3(objects[1][1],{0,0.2,0}),{0,0,50})
 		end
-		if gB(31) then
-			maxPushForce=0.05
-		else
-			maxPushForce=0.01
+		if not ableToShoot then
+			tickShoot = tickShoot+1
 		end
-		pushColour={255,255,255}
-		if gB(1) then
-			pushForce=-maxPushForce
-			pushColour={0,0,255}
-		end
-		if gB(3) then
-			pushForce=maxPushForce
-			pushColour={255,0,0}
-		end
-		if not gB(31) then
-			for i=1,3 do
-				pushColour[i]=mn(pushColour[i]+50,255)
-			end
-		end
+		
 		--cr=0
 		--if gB(4) then
 		--	cr=-0.025
@@ -633,6 +649,9 @@ function onTick()
 					isColliding = gjkCollisionDetection(object1[9],object2[9])
 					--monkeyCollision = gjkCollisionDetection(objects[1][7],objects[2][7])
 					if isColliding then
+						if i==1 and j>=5 then
+							ballHit = trueVar
+						end
 						--collideAtAll = trueVar
 						gjkSupport(object1[9],isColliding[1])
 						collPoints1 = pointList
@@ -694,7 +713,7 @@ function onTick()
 							if totalSpeedTangential>0.001 then
 								unitFriction = norm3(totalVelocityTangential)
 								movementFromFriction = getMovementPerUnitForce(object1,trueContactPoint,unitFriction) + getMovementPerUnitForce(object2,trueContactPoint,unitFriction)
-								frictionForce = mn(totalSpeedTangential/movementFromFriction, pushForce*0.3)
+								frictionForce = mn(totalSpeedTangential/movementFromFriction, pushForce*0.3) -- the last number is friction coefficient
 								
 								applyForce(object1,trueContactPoint,mul3(unitFriction,-frictionForce))
 								applyForce(object2,trueContactPoint,mul3(unitFriction,frictionForce))
@@ -726,7 +745,7 @@ function onDraw()
 	h = screenVar.getHeight()
 	w2=w/2
 	h2=h/2
-	screenScale = tan(fov/2)*w2
+	screenScale = w2/tan(fov/2)
 	
 	
 	stCl(255,255,255)
@@ -808,8 +827,6 @@ function onDraw()
 		--end
 		
 		--text(100,1,monkeyRayHit and "YES" or "NO")
-		
-		stCl(unpack(pushColour))
 		
 		if overalRayHit then
 			recSize=30/collPointCamRelative[3]
