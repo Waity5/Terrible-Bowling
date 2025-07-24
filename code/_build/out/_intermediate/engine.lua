@@ -51,7 +51,8 @@ camHeightEnd=0.6
 tickRate=62.5
 angleConvert=pi/180
 moveSpeed=0.5/tickRate
-rotateSpeed=10*angleConvert/tickRate
+rotateSpeed=5*angleConvert/tickRate
+offsetSpeed=0.05/tickRate
 fovStart=20*angleConvert
 fovEnd=90*angleConvert
 fov=fovStart
@@ -415,6 +416,7 @@ function onTick()
 			ballHit=falseVar
 			ableToShoot=trueVar
 			objects={}
+			rayOffset={0,-0.15,0}
 			--for i=-1,1 do
 			--	for j=-1,1 do
 			--		summonObject("blender_cube",{[1]={i*2.5,0,j*2.5}})
@@ -437,7 +439,7 @@ function onTick()
 			
 			for i=1,4 do
 				for j=1,i do
-					summonObject("bowling_pin",{[1]={(j-i/2-0.5)*0.3,0.15,(i-1)*sqrt(0.3^2-0.15^2)},[7]=0.75,[8]=50,[9]={0,-9.81,0}})
+					summonObject("bowling_pin",{[1]={(j-i/2-0.5)*0.3,0.15,(i-1)*sqrt(0.3^2-0.15^2)},[7]=0.75,[8]=50,[9]={0,-5,0}})
 				end
 			end
 		end
@@ -459,6 +461,8 @@ function onTick()
 		if not ballHit then
 			camRot[1] = camRot[1]-gN(3)*rotateSpeed
 			camRot[2] = -0.01
+			rayOffset[2] = rayOffset[2]+gN(2)*offsetSpeed
+			rayOffset[1] = rayOffset[1]+gN(1)*offsetSpeed
 			camPos = {sin(camRot[1])*camDist,camHeight,-cos(camRot[1])*camDist+objects[1][1][3]}
 		end
 		
@@ -472,14 +476,7 @@ function onTick()
 		--if gB(1) then
 		--	applyForce(objects[1],objects[1][1],{0,0,0.5})
 		--end
-		if ableToShoot and gB(31) then
-			ableToShoot = falseVar
-			tickShoot = 0
-			applyForce(objects[1],add3(objects[1][1],{0,0.2,0}),{0,0,50})
-		end
-		if not ableToShoot then
-			tickShoot = tickShoot+1
-		end
+		
 		
 		--cr=0
 		--if gB(4) then
@@ -536,8 +533,10 @@ function onTick()
 			object[1] = add3(object[1],mul3(object[2],deltaTime)) -- apply velocity to position
 			object[2] = add3(object[2],mul3(object[3],deltaTime)) -- apply acceleration to velocity
 			object[3] = mul3(object[12],1) -- reset acceleration to gravity
-			object[2] = mul3(object[2],0.9995) -- slow down velocity
-			object[5] = mul3(object[5],0.9995) -- slow down rotation
+			--object[2] = mul3(object[2],0.9995) -- slow down velocity
+			if object[14] == "bowling_pin" then
+				object[5] = mul3(object[5],0.9) -- slow down rotation
+			end
 		
 			curRotationMatrix = quaternionToMatrix(norm4(object[4]))
 		
@@ -551,7 +550,7 @@ function onTick()
 					
 					crPoint[4]=multVectorByMatrix(crPoint[3],cameraRotationMatrix)
 					distances=crPoint[3]
-					crPoint[7]=sqrt(distances[1]^2 + distances[2]^2 + distances[3]^2)
+					crPoint[7]=distances[3]--sqrt(distances[1]^2 + distances[2]^2 + distances[3]^2)
 					
 					crPoint[5]={crPoint[4][1]*screenScale/crPoint[4][3],
 					-crPoint[4][2]*screenScale/crPoint[4][3]}
@@ -610,25 +609,33 @@ function onTick()
 			end
 		end
 		
-		if falseVar then
+		if ableToShoot then
 			pushRayHit = falseVar
 			bestT=2^16
+			rayDir = norm3({cameraRotationVector[1],0,cameraRotationVector[3]}) -- norm3(sub3(cameraRotationVector,rayOffset))
+			rayStart = rayOffset
 			for i,object in ipairsVar(objects) do
-				for j=1,#object[8] do
-					curTri = object[8][j]
-					curHit = intersectTriangle({0,0,0},cameraRotationVector,object[7][curTri[1]][3],object[7][curTri[2]][3],object[7][curTri[3]][3])
-					if curHit and t<bestT then
-						pushRayHit = trueVar
-						bestT=t
-						bestObject=object
+				if object[14]=="icoball" then
+					for j=1,#object[8] do
+						curTri = object[8][j]
+						curHit = intersectTriangle(rayStart,rayDir,object[7][curTri[1]][3],object[7][curTri[2]][3],object[7][curTri[3]][3])
+						if curHit and t<bestT then
+							pushRayHit = trueVar
+							bestT=t
+							bestObject=object
+						end
 					end
 				end
 			end
 			
 			if pushRayHit then
 				overalRayHit = trueVar
-				collPoint=add3(mul3(cameraRotationVector,bestT),camPos)
-				applyForce(bestObject,collPoint,mul3(cameraRotationVector,pushForce))
+				collPoint=add3(add3(mul3(rayDir,bestT),camPos),rayStart)
+				if gB(31) then
+					applyForce(bestObject,collPoint,mul3(rayDir,50))
+					bestObject[11]=1
+					ableToShoot=falseVar
+				end
 				if gB(2) then
 					bestObject[12]={0,-9.81,0}
 				end
@@ -649,7 +656,7 @@ function onTick()
 					isColliding = gjkCollisionDetection(object1[9],object2[9])
 					--monkeyCollision = gjkCollisionDetection(objects[1][7],objects[2][7])
 					if isColliding then
-						if i==1 and j>=5 then
+						if object1[14]=="icoball" and object2[14]=="bowling_pin" then
 							ballHit = trueVar
 						end
 						--collideAtAll = trueVar
@@ -670,7 +677,11 @@ function onTick()
 							mul3(direction1,
 							dot(sub3(collPoints2[1],collPoints1[1]),normal2) / dot(direction1,normal2)))
 						else
-							trueContactPoint = collPoints1[1]
+							if object1[13]>object2[13] then
+								trueContactPoint = collPoints2[1]
+							else
+								trueContactPoint = collPoints1[1]
+							end
 						end
 						--velocity1 = object1[2]
 						--velocity2 = object2[2]
@@ -830,7 +841,7 @@ function onDraw()
 		
 		if overalRayHit then
 			recSize=30/collPointCamRelative[3]
-			rec(collPointScreenPos[1]+w2-(recSize//2),collPointScreenPos[2]+h2-(recSize//2),recSize,recSize)
+			rec(collPointScreenPos[1]+w2-(recSize//2),-collPointScreenPos[2]+h2-(recSize//2),recSize,recSize)
 		end
 	end
 end
