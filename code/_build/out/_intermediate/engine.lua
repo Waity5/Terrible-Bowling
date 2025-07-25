@@ -7,7 +7,7 @@ flr=m.floor
 pi=m.pi
 gN=input.getNumber
 gB=input.getBool
-sB=output.setBool
+sN=output.setNumber
 trueVar=true
 falseVar=false
 ipairsVar=ipairs
@@ -51,7 +51,7 @@ camHeightEnd=0.6
 tickRate=62.5
 angleConvert=pi/180
 moveSpeed=0.5/tickRate
-rotateSpeed=5*angleConvert/tickRate
+rotateSpeed=3*angleConvert/tickRate
 offsetSpeed=0.05/tickRate
 fovStart=20*angleConvert
 fovEnd=90*angleConvert
@@ -286,7 +286,7 @@ function intersectTriangle(rayPos,rayDir,a,b,c) -- https://stackoverflow.com/que
 	u =  dot(E2,DAO) * invdet
 	v = -dot(E1,DAO) * invdet
 	t =  dot(AO,N)  * invdet
-	return (-det >= 1e-6 and t >= 0.0 and u >= 0.0 and v >= 0.0 and (u+v) <= 1.0)
+	return (-det >= 1e-6 and t >= 0 and u >= 0 and v >= 0 and (u+v) <= 1)
 end
 
 function cross(a,b)
@@ -306,7 +306,7 @@ function vectorToQuaternion(vec)
 end
 
 function updateQuaternionByVector(quat,vec)
-	local newQuat=multQuaternionByQuaternion(quat,vectorToQuaternion(vec))
+	newQuat=multQuaternionByQuaternion(quat,vectorToQuaternion(vec))
 	for i=1,4 do
 		newQuat[i]=quat[i] + newQuat[i]*0.5
 	end
@@ -314,8 +314,8 @@ function updateQuaternionByVector(quat,vec)
 end
 
 function multQuaternionByQuaternion(quat1,quat2)
-	local w1,x1,y1,z1=unpack(quat1)
-	local w2,x2,y2,z2=unpack(quat2)
+	w1,x1,y1,z1=unpack(quat1)
+	w2,x2,y2,z2=unpack(quat2)
 	return {
 		w1*w2-x1*x2-y1*y2-z1*z2,
 		w1*x2+x1*w2+y1*z2-z1*y2,
@@ -325,7 +325,7 @@ function multQuaternionByQuaternion(quat1,quat2)
 end
 
 function multVectorByMatrix(vec,matrix)
-	local newVec={}
+	newVec={}
 	for j = 1,3 do
 		cr=0
 		for k = 1,3 do
@@ -354,7 +354,7 @@ function norm4(a,correction)
 end
 
 function quaternionToMatrix(quat)
-	local w,x,y,z=unpack(quat)
+	w,x,y,z=unpack(quat)
 	return {
 		{1-(2*y*y + 2*z*z), 2*x*y + 2*z*w,     2*x*z - 2*y*w},
 		{2*x*y - 2*z*w,     1-(2*x*x + 2*z*z), 2*y*z + 2*x*w},
@@ -362,10 +362,18 @@ function quaternionToMatrix(quat)
 	}
 end
 
-function httpReply(a,b,c)
-	httpTkP=httpTk//2
-	httpTk=0
+function calcNormal(object1,object2)
+	velocity1 = add3(cross(object1[5],sub3(trueContactPoint,object1[1])),object1[2])
+	velocity2 = add3(cross(object2[5],sub3(trueContactPoint,object2[1])),object2[2])
+	totalVelocity = sub3(velocity1,velocity2)
+	
+	totalVelocityNormal = dot(isColliding[1],totalVelocity)
 end
+
+--function httpReply(a,b,c)
+--	httpTkP=httpTk//2
+--	httpTk=0
+--end
 
 function onTick()
 	for j=1,1 do
@@ -412,11 +420,14 @@ function onTick()
 
 	if loaded then
 		tick = tick+1
+		
 		if init then
-			ballHit=falseVar
-			ableToShoot=trueVar
+			
+			
 			objects={}
 			rayOffset={0,-0.15,0}
+			standingPins=10
+			
 			--for i=-1,1 do
 			--	for j=-1,1 do
 			--		summonObject("blender_cube",{[1]={i*2.5,0,j*2.5}})
@@ -428,7 +439,7 @@ function onTick()
 			
 			--summonObject("cylinder",{[1]={-6,0,0}})
 			--summonObject("utah_teapot",{[1]={6,0,0}})
-			summonObject("icoball",{[1]={0,0.4,ballStart},[7]=0.2,[8]=10,[9]={0,-9.81,0}})
+			
 			
 			--summonObject("wide_cube",{[1]={0,-1,0},[7]=0,[8]=0})
 			summonObject("bowling_lane1",{[1]={0,-0.2,-8.15},[7]=0,[8]=0})
@@ -442,7 +453,25 @@ function onTick()
 					summonObject("bowling_pin",{[1]={(j-i/2-0.5)*0.3,0.15,(i-1)*sqrt(0.3^2-0.15^2)},[7]=0.75,[8]=50,[9]={0,-5,0}})
 				end
 			end
+			
+			summonObject("icoball",{[1]={0,0.4,ballStart},[7]=0.2,[8]=10,[9]={0,-9.81,0}})
 		end
+		
+		sN(1,-1)
+		if init or ballHitTimer>120 then
+			sN(1,standingPins)
+			
+			tableRemove(objects,#objects)
+			summonObject("icoball",{[1]={0,0.4,ballStart},[7]=0.2,[8]=10,[9]={0,-9.81,0}})
+			
+			ableToShoot,ballHit,init=trueVar
+			ballHitTimer=0
+			
+			if standingPins==0 then
+				init=trueVar
+			end
+		end
+		
 		--if gB(31) then
 		--	camPos[2]=camPos[2]+gN(2)*moveSpeed
 		--else
@@ -453,7 +482,8 @@ function onTick()
 		--camRot[1]=camRot[1]-gN(3)*rotateSpeed
 		--camRot[2]=camRot[2]+gN(4)*rotateSpeed
 		
-		lerpDist = mn((objects[1][1][3]-ballStart)/(ballEnd-ballStart),1)
+		ball = objects[#objects]
+		lerpDist = mn((ball[1][3]-ballStart)/(ballEnd-ballStart),1)
 		camDist = camDistStart + (camDistEnd-camDistStart)*lerpDist
 		fov = fovStart + (fovEnd-fovStart)*lerpDist
 		camHeight = camHeightStart + (camHeightEnd-camHeightStart)*lerpDist
@@ -463,7 +493,7 @@ function onTick()
 			camRot[2] = -0.01
 			rayOffset[2] = rayOffset[2]+gN(2)*offsetSpeed
 			rayOffset[1] = rayOffset[1]+gN(1)*offsetSpeed
-			camPos = {sin(camRot[1])*camDist,camHeight,-cos(camRot[1])*camDist+objects[1][1][3]}
+			camPos = {sin(camRot[1])*camDist,camHeight,-cos(camRot[1])*camDist+ball[1][3]}
 		end
 		
 		--if gB(1) then
@@ -476,6 +506,11 @@ function onTick()
 		--if gB(1) then
 		--	applyForce(objects[1],objects[1][1],{0,0,0.5})
 		--end
+		
+		if ballHit then
+			ballHitTimer = ballHitTimer+1
+		end
+		
 		
 		
 		--cr=0
@@ -536,6 +571,14 @@ function onTick()
 			--object[2] = mul3(object[2],0.9995) -- slow down velocity
 			if object[14] == "bowling_pin" then
 				object[5] = mul3(object[5],0.9) -- slow down rotation
+				if object[1][2]<0.1 and not object[15] then
+					object[15]=trueVar
+					standingPins=standingPins-1
+				end
+			elseif object[14] == "icoball" then
+				if object[1][2]<-1 or (object[2][3]<1 and not ableToShoot) then
+					ballHit = trueVar
+				end
 			end
 		
 			curRotationMatrix = quaternionToMatrix(norm4(object[4]))
@@ -632,8 +675,8 @@ function onTick()
 				overalRayHit = trueVar
 				collPoint=add3(add3(mul3(rayDir,bestT),camPos),rayStart)
 				if gB(31) then
-					applyForce(bestObject,collPoint,mul3(rayDir,50))
-					bestObject[11]=1
+					applyForce(bestObject,collPoint,mul3(rayDir,55))
+					bestObject[11]=1.5
 					ableToShoot=falseVar
 				end
 				if gB(2) then
@@ -677,19 +720,13 @@ function onTick()
 							mul3(direction1,
 							dot(sub3(collPoints2[1],collPoints1[1]),normal2) / dot(direction1,normal2)))
 						else
-							if object1[13]>object2[13] then
-								trueContactPoint = collPoints2[1]
-							else
-								trueContactPoint = collPoints1[1]
-							end
+							trueContactPoint = object1[13]>object2[13] and collPoints2[1] or collPoints1[1]
 						end
 						--velocity1 = object1[2]
 						--velocity2 = object2[2]
-						velocity1 = add3(cross(object1[5],sub3(trueContactPoint,object1[1])),object1[2])
-						velocity2 = add3(cross(object2[5],sub3(trueContactPoint,object2[1])),object2[2])
-						totalVelocity = sub3(velocity1,velocity2)
 						
-						totalVelocityNormal = dot(isColliding[1],totalVelocity)
+						calcNormal(object1,object2)
+						
 						if totalVelocityNormal>0 then
 							--totalInverseResistance = object1[10]+object2[10]
 							--totalForce = mul3(isColliding[1],totalVelocity*(0.5-0.25*(abs(object1[10]-object2[10])/totalInverseResistance))) -- the inverse resistance maths causes a mult of 0.5 between identically weighted objects
@@ -712,11 +749,7 @@ function onTick()
 							-- re-calculating velocites since they will have changed
 							-- this step bugs me but it produces inaccurate & visibly wrong results otherwise
 							
-							velocity1 = add3(cross(object1[5],sub3(trueContactPoint,object1[1])),object1[2])
-							velocity2 = add3(cross(object2[5],sub3(trueContactPoint,object2[1])),object2[2])
-							totalVelocity = sub3(velocity1,velocity2)
-							
-							totalVelocityNormal = dot(isColliding[1],totalVelocity)
+							calcNormal(object1,object2)
 							
 							totalVelocityTangential = sub3(totalVelocity,mul3(isColliding[1],totalVelocityNormal))
 							
@@ -742,7 +775,7 @@ function onTick()
 		
 		table.sort(renderTris,function(a,b)return a[7]>b[7]end)
 		
-		init=falseVar
+		
 	end
 
 	httpTk=httpTk+1
@@ -751,7 +784,7 @@ end
 
 function onDraw()
 	screenVar=screen
-	local triF,tri,rec,stCl,text=screenVar.drawTriangleF,screenVar.drawTriangle,screenVar.drawRectF,screenVar.setColor,screenVar.drawText --locals are faster because lua
+	local triF,tri,rec,stCl=screenVar.drawTriangleF,screenVar.drawTriangle,screenVar.drawRectF,screenVar.setColor --locals are faster because lua
 	w = screenVar.getWidth()
 	h = screenVar.getHeight()
 	w2=w/2
@@ -759,7 +792,7 @@ function onDraw()
 	screenScale = w2/tan(fov/2)
 	
 	
-	stCl(255,255,255)
+	
 	--text(1,1,"TPS: ")
 	--text(26,1,httpTkP)
 	
@@ -771,6 +804,8 @@ function onDraw()
 	--end
 	
 	if loaded then
+		--text(1,1,standingPins)
+		
 		for i=1,#renderTris do
 			curTri = renderTris[i]
 			p1 = curTri[1]
@@ -803,9 +838,6 @@ function onDraw()
 		--	end
 		--end
 		
-		stCl(255,255,255)
-		
-		text(1,1,collCals)
 		
 		
 		--if monkeyCollision then
